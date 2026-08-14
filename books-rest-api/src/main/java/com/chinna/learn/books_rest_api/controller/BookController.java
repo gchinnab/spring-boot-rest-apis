@@ -1,6 +1,8 @@
 package com.chinna.learn.books_rest_api.controller;
 
 import com.chinna.learn.books_rest_api.entity.Book;
+import com.chinna.learn.books_rest_api.exception.BookErrorResponse;
+import com.chinna.learn.books_rest_api.exception.BookNotFoundException;
 import com.chinna.learn.books_rest_api.request.BookRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -8,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -53,8 +56,7 @@ public class BookController {
         return books.stream()
                 .filter(book -> book.getId() == id)
                 .findFirst()
-                .orElse(null);
-
+                .orElseThrow(() -> new BookNotFoundException("Book not found "+ id));
     }
 
     @Operation(summary = "Create a new Book", description = "Add new book to List of Books available")
@@ -71,22 +73,28 @@ public class BookController {
     @Operation(summary = "Update a book", description = "Update the specific details using id")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping("/{id}")
-    public void updateBook(@Parameter(description = "Id of the Book to be Updated") @PathVariable @Min( value = 1) long id, @Valid @RequestBody BookRequest bookRequest){
+    public Book updateBook(@Parameter(description = "Id of the Book to be Updated") @PathVariable @Min( value = 1) long id, @Valid @RequestBody BookRequest bookRequest){
 
         for(int i=0; i < books.size(); i++){
             if(books.get(i).getId() == id){
                 Book updateBook = convertToBook(id, bookRequest);
                 books.set(i, updateBook);
-                return;
+                return updateBook;
             }
         }
 
+        throw new BookNotFoundException("Boot not found " +id);
     }
 
     @Operation(summary = "Delete a Book", description = "Remove a book by id from List of available books")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
     public void deleteBook(@Parameter(description = "Id of the Book to be Deleted") @PathVariable @Min( value = 1) long id){
+        books.stream()
+                .filter(book -> book.getId() == id)
+                .findFirst()
+                .orElseThrow(() -> new BookNotFoundException("Book not found "+ id));
+
         books.removeIf(book -> book.getId() == id);
     }
 
@@ -99,5 +107,31 @@ public class BookController {
                 bookRequest.getCategory(),
                 bookRequest.getRating()
         );
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<BookErrorResponse> handleException(BookNotFoundException bookNotFoundException){
+
+        BookErrorResponse bookErrorResponse = new BookErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                bookNotFoundException.getMessage(),
+                System.currentTimeMillis()
+        );
+
+        return new ResponseEntity<>(bookErrorResponse, HttpStatus.NOT_FOUND);
+
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<BookErrorResponse> handleException(Exception exception){
+
+        BookErrorResponse bookErrorResponse = new BookErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                exception.getMessage(),
+                System.currentTimeMillis()
+        );
+
+        return new ResponseEntity<>(bookErrorResponse, HttpStatus.BAD_REQUEST);
+
     }
 }
