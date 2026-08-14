@@ -1,7 +1,6 @@
 package com.chinna.learn.books_rest_api.controller;
 
 import com.chinna.learn.books_rest_api.entity.Book;
-import com.chinna.learn.books_rest_api.exception.BookErrorResponse;
 import com.chinna.learn.books_rest_api.exception.BookNotFoundException;
 import com.chinna.learn.books_rest_api.request.BookRequest;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,7 +9,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -109,29 +107,4 @@ public class BookController {
         );
     }
 
-    @ExceptionHandler
-    public ResponseEntity<BookErrorResponse> handleException(BookNotFoundException bookNotFoundException){
-
-        BookErrorResponse bookErrorResponse = new BookErrorResponse(
-                HttpStatus.NOT_FOUND.value(),
-                bookNotFoundException.getMessage(),
-                System.currentTimeMillis()
-        );
-
-        return new ResponseEntity<>(bookErrorResponse, HttpStatus.NOT_FOUND);
-
-    }
-
-    @ExceptionHandler
-    public ResponseEntity<BookErrorResponse> handleException(Exception exception){
-
-        BookErrorResponse bookErrorResponse = new BookErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                exception.getMessage(),
-                System.currentTimeMillis()
-        );
-
-        return new ResponseEntity<>(bookErrorResponse, HttpStatus.BAD_REQUEST);
-
-    }
 }
