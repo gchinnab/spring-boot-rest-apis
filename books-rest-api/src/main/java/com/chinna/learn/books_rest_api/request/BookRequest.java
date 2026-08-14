@@ -1,9 +1,15 @@
 package com.chinna.learn.books_rest_api.request;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
+
 public class BookRequest {
 
+    @Size(min=1, max = 30, message = "title field must be between 1 and 30 characters")
     private String title;
 
+    @Size(min=1, max = 40, message = "author field must be between 1 and 40 characters")
     private String author;
 
     public String getTitle() {
@@ -38,8 +44,11 @@ public class BookRequest {
         this.rating = rating;
     }
 
+    @Size(min=1, max = 30, message = "category field must be between 1 and 30 characters")
     private String category;
 
+    @Min(value = 1, message = "Rating must be atleast 1")
+    @Max(value = 5, message = "Rating cann't exceed 5")
     private int rating;
 
     public BookRequest(String title, String author, String category, int rating) {
