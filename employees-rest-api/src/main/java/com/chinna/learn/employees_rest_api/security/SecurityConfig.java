@@ -23,7 +23,19 @@ public class SecurityConfig {
     //getting users details from H2 db
     @Bean
     public UserDetailsManager userDetailsManager(DataSource dataSource){
-        return new JdbcUserDetailsManager(dataSource);
+       // return new JdbcUserDetailsManager(dataSource);
+        JdbcUserDetailsManager jdbcUserDetailsManager = new JdbcUserDetailsManager(dataSource);
+
+        //define query to return user by username
+
+        jdbcUserDetailsManager.setUsersByUsernameQuery(
+                "select user_id, password, active from system_users where user_id=?"
+        );
+        //define query authorities by username
+        jdbcUserDetailsManager.setAuthoritiesByUsernameQuery(
+                "select user_id, role from roles where user_id=?"
+        );
+        return  jdbcUserDetailsManager;
     }
 
 
